@@ -1,41 +1,27 @@
-from langchain.tools import BaseTool
-from langchain.prompts import PromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.pydantic_v1 import Field, BaseModel
-import os
+
+from langchain.agents import AgentExecutor
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+from agente import AgenteOpenAIFunctions
 
 load_dotenv()
 
-class ExtratorDeEstudante(BaseModel):
-    estudante:str = Field("Nome do estudante informado, sempre em letras minúsculas. Exemplos: joão, carla, ana.")
-
-class DadosDeEstudante(BaseTool):
-    name = "DadosDeEstudante"
-    description = """Esta ferramenta extrai o histórico e preferências de um estudante de acordo com seu histórico."""
-
-    def _run(self, input: str) -> str:
-        llm = ChatOpenAI(model="gpt-4o", api_key=os.getenv("OPENAI_API_KEY"))
-
-        parser = JsonOutputParser(pydantic_object=ExtratorDeEstudante)
-
-        template = PromptTemplate(template="""
-            Você deve analisar a entrada e extrair o nome da pessoa que ela contém.
-            Entrada: 
-            {input}
-            Formato de saída:
-            {formato_saida}
-        """,
-        input_variables=["input"],
-        partial_variables={"formato_saida" : parser.get_format_instructions()})
-
-        cadeia = template | llm | parser
-        resposta = cadeia.invoke({"input": input})
-
-        return resposta['estudante']
+agente = AgenteOpenAIFunctions()
+executor = AgentExecutor(agente = agente.agente, tools = agente.tools, verbose=True)
 
 pergunta = "Quais os dados da Ana?"
+pergunta = "Quais os dados da Bianca?"
+pergunta = "Quais os dados da Ana e da Bianca?"
+pergunta = "Crie um perfil acadêmico para a Ana!"
+pergunta = "Compare o perfil acadêmico da Ana com o da Bianca!"
+pergunta = "Tenho sentido Ana desanimada com cursos de matemática. Seria uma boa parear ela com a Bianca?"
+pergunta = "Tenho sentido Ana desanimada com cursos de matemática. Seria uma boa parear ela com o Marcos?"
+pergunta = "Quais os dados da USP?"
+pergunta = "Dentre USP e UFRJ, qual você recomenda para a acadêmica Ana?"
+pergunta = "Dentre uni camp e USP, qual você recomenda para a Ana?"
+pergunta = "Quais as faculdades com melhores chances para a Ana entrar?"
+pergunta = "Dentre todas as faculdades existentes, quais Ana possui maiores chances de entrar?"
+pergunta = "Além das faculdades favoritas da Ana, existem outras faculdades. Considere elas também. Quais Ana possui mais chance de entrar?"
+resposta = executor.invoke({"input": pergunta})
 
-DadosDeEstudante().run(pergunta)
+print(resposta)
 

@@ -6,3 +6,4 @@ faiss-gpu==1.7.2
 pypdf==4.1.0
 langchainhub==0.1.15
 pandas==2.2.2
+langchainhub==0.1.15
